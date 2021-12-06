@@ -1,0 +1,26 @@
+const express = require("express");
+const GUN = require("gun");
+const cors = require("cors");
+
+const app = express();
+
+app.use(cors());
+
+const server = app.listen(8081);
+
+const gun = GUN({ web: server });
+
+const controller = require("./api/controller")(gun);
+const routes = require("./api/router")(controller);
+
+app.get("/", (req, res) => {
+  res.json({ working: true });
+});
+
+app.use("/api/v1", routes);
+
+// setTimeout(() => {
+//   gun.get("name").put({
+//     tag: "g",
+//   });
+// }, 5000);

@@ -15,45 +15,93 @@ module.exports = (gun) => {
     // getCollection: function (req, res) {},
     getAllDocuments: async function (req, res) {
       let collectionName = req.params.collectionName;
-      // let allRecords = fs.readFileSync(persistantCollectionsPath, {encoding:'utf8', flag:'r'})
-      //   .split("\n")
-      //   .filter(el => el.split(":")[0] === collectionName);
+      let allRecords = fs.readFileSync(persistantCollectionsPath, {encoding:'utf8', flag:'r'})
+        .split("\n")
+        .filter(el => el.split(":")[0] === collectionName);
       
-      // let resultSet = [];
-      // for (let i = 0; i < allRecords.length; i++) {
-      //   await gun.get(allRecords[i]).once((node, key, _msg, _ev) => {
-      //     console.log("here")
-      //     resultSet.push(node);
-      //   }, );
-      // }
-      
-      let allDocuments = gun.get(collectionName);
+      let resultSet = [];
+      for (let i = 0; i < allRecords.length; i++) {
+        await gun.get(allRecords[i]).once((node, key, _msg, _ev) => {
+          let result = JSON.parse(JSON.stringify(node))
+          delete result._;
+          resultSet.push(result);
+        }, );
+      }
 
-      let x = await allDocuments.map(doc => doc);
-
-      console.log(x)
-
-      return res.json(allDocuments);
+      return res.json(resultSet);
     },
-    // getDocumentById: function (req, res) {},
+    getDocumentById: async function (req, res) {
+      const id = req.body.id;
+      const collectionName = req.body.collectionName;
+      let data = {};
+      await gun.get(`${collectionName}:${id}`).once(node => {
+        let result = JSON.parse(JSON.stringify(node))
+        delete result._;
+        data = result;
+      });
+
+      return res.json(data);
+    },
     // queryDocuments: function (req, res) {},
 
     // SETTERS
-    createDocument: function (req, res) {
+    createDocument: async function (req, res) {
       req.body.document["id"] = uuidv4();
       let uniqueCollectionName = `${req.body.collectionName}:${req.body.document.id}` 
-      gun.get(uniqueCollectionName).put(req.body.document);
+      await gun.get(uniqueCollectionName).put(req.body.document);
       fs.appendFileSync(persistantCollectionsPath, uniqueCollectionName + "\n");
-
-      // let collection = gun.get(req.body.collectionName);
-      // let document = gun.get("document");
-      // document.put(req.body.document);
-
-      // collection.set(document)
 
       return res.json({
         operation: "complete"
       });
     },
+
+    // RELATOR
+    editDocument: async function (req, res) {
+      const id = req.body.id;
+      const collectionName = req.body.collectionName;
+      let data = {};
+
+      await gun.get(`${collectionName}:${id}`).once(node => {
+        let result = JSON.parse(JSON.stringify(node))
+        delete result._;
+        data = result;
+      });
+
+      data = {
+        ...data,
+        ...req.body.modifiedData,
+      }
+
+      await gun.get(`${collectionName}:${id}`).put(data);
+
+      return res.json({
+        operation: "complete"
+      });
+    },
+
+    // relateDocument: async function (req, res) {
+    //   const id = req.body.id;
+    //   const collectionName = req.body.collectionName;
+    //   let data = {};
+
+    //   await gun.get(`${collectionName}:${id}`).once(node => {
+    //     let result = JSON.parse(JSON.stringify(node))
+    //     delete result._;
+    //     data = result;
+    //   });
+
+
+    //   await gun.get(`${collectionName}:${}`).put(data);
+
+    //   data = {
+    //     ...data,
+    //     ...req.body.modifiedData,
+    //   }
+
+    //   return res.json({
+    //     operation: "complete"
+    //   });
+    // },
   };
 };

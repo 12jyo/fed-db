@@ -10,6 +10,8 @@ module.exports = (gun) => {
       allRecords.pop();
       allRecords = [...new Set(allRecords.map(el => el.split(":")[0]))];
 
+      console.log(allRecords)
+
       return res.json(allRecords);
     },
     // getCollection: function (req, res) {},

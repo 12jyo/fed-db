@@ -20,6 +20,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1", routes);
+console.log("Running on port 8081");
 
 // setTimeout(() => {
 //   gun.get("name").put({

@@ -48,11 +48,13 @@ module.exports = (gun) => {
 
     // SETTERS
     createDocument: async function (req, res) {
+      console.time("Create Document");
       req.body.document["id"] = uuidv4();
+      console.log(req.body);
       let uniqueCollectionName = `${req.body.collectionName}:${req.body.document.id}` 
       await gun.get(uniqueCollectionName).put(req.body.document);
       fs.appendFileSync(persistantCollectionsPath, uniqueCollectionName + "\n");
-
+      console.timeEnd("Create Document");
       return res.json({
         operation: "complete"
       });

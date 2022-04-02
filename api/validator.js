@@ -3,7 +3,7 @@ const joi = require("joi");
 module.exports.createDocument = async (req, res, next) => {
     const schema = joi.object({
         collectionName: joi.string().regex(new RegExp(/^[a-zA-Z]+$/)).required(),
-        document: joi.string().required()
+        document: joi.object().required()
     });
 
     try {
@@ -41,7 +41,7 @@ module.exports.getDocumentById = async (req, res, next) => {
 module.exports.editDocument = async (req, res, next) => {
     const schema = joi.object({
         collectionName: joi.string().regex(new RegExp(/^[a-zA-Z]+$/)).required(),
-        id: joi.string().regex(new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/)).required(),
+        id: joi.string().required(),
         modifiedData: joi.object().required()
     });
 
